@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Academy - Изучение HTML</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <script src="ai-assistant.js"></script>
+    <style>
+        #practice {
+            margin: 2rem 0;
+            padding: 0 1rem;
+        }
+        
+        .practice-description {
+            color: #555;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+
+        .ai-practice-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 1rem;
+            height: 70vh;
+            margin-top: 1.5rem;
+        }
+        
+        .code-editor-container, .output-container, .ai-assistant-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .code-editor-container {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+        }
+        
+        .output-container {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .ai-assistant-container {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+
+        .editor-header, .output-header, .assistant-header {
+            padding: 0.75rem 1rem;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e1e5eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+        }
+        
+        .editor-actions, .output-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+
+        .editor-btn {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+        
+        .editor-btn:hover {
+            background: #3a56d4;
+            transform: translateY(-1px);
+        }
+        
+        .editor-btn:active {
+            transform: translateY(0);
+        }
+        
+        .editor-btn i {
+            font-size: 0.8rem;
+        }
+        
+
+        .code-editor {
+            flex: 1;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow: auto;
+        }
+        
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+
+        #html-output {
+            flex: 1;
+            border: none;
+            background: white;
+            width: 100%;
+        }
+                html {
+            scroll-behavior: smooth;
+        }
+
+
+        section {
+            scroll-margin-top: 100px;
+        }
+
+
+        .logo i {
+            color: #ffd700; 
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover i {
+            transform: rotate(15deg);
+        }
+        
+
+        .assistant-status {
+            font-size: 0.8rem;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .assistant-status i {
+            font-size: 0.7rem;
+            color: #4caf50;
+        }
+        
+        .assistant-status.connecting i {
+            color: #ff9800;
+        }
+        
+        .assistant-status.error i {
+            color: #f44336;
+        }
+        
+
+        .assistant-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4361ee;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+        
+        .user-message .message-icon {
+            background: #495057;
+        }
+        
+        .message-content {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: #f1f3f5;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+        
+        .user-message .message-content {
+            background: #4361ee;
+            color: white;
+            border-radius: 12px 12px 0 12px;
+        }
+        
+        .ai-message .message-content {
+            border-radius: 12px 12px 12px 0;
+        }
+        
+        .message-content p {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin: 0.5rem 0;
+            padding-left: 1.2rem;
+        }
+        
+        .message-content li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .message-content code {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        
+        .user-message .message-content code {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 0.75rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .message-content pre code {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            display: block;
+        }
+        
+
+        .assistant-input {
+            padding: 0.75rem;
+            border-top: 1px solid #e1e5eb;
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        #user-message {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e1e5eb;
+            border-radius: 8px;
+            resize: none;
+            font-size: 0.9rem;
+            min-height: 50px;
+            max-height: 150px;
+            line-height: 1.5;
+            transition: all 0.2s;
+        }
+        
+        #user-message:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        .send-btn {
+            background: #4361ee;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .send-btn:hover {
+            background: #3a56d4;
+            transform: translateY(-1px);
+        }
+        
+        .send-btn:active {
+            transform: translateY(0);
+        }
+        
+        .send-btn i {
+            font-size: 1rem;
+        }
+        
+
+        .suggestion-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 0.75rem;
+        }
+        
+        .suggestion-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-btn:hover {
+            background: #dee2e6;
+        }
+        
+        .suggestion-btn i {
+            color: #4361ee;
+            font-size: 0.7rem;
+        }
+        
+
+        @media (max-width: 992px) {
+            .ai-practice-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+            
+            .code-editor-container {
+                grid-column: 1;
+                grid-row: 1;
+                height: 300px;
+            }
+            
+            .output-container {
+                grid-column: 1;
+                grid-row: 2;
+                height: 300px;
+            }
+            
+            .ai-assistant-container {
+                grid-column: 1;
+                grid-row: 3;
+                height: 400px;
+            }
+        }
+        
+
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        .fullscreen #html-output {
+            height: 100vh;
+        }
+        
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(67, 97, 238, 0.3);
+            border-radius: 50%;
+            border-top-color: #4361ee;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --code-bg: #2b2d42;
+            --code-text: #f8f9fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .ai-assistant-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+        .assistant-header {
+            padding: 12px 16px;
+            background: #4361ee;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .assistant-status {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .assistant-status i {
+            font-size: 0.6rem;
+            color: #4caf50;
+        }
+
+        .assistant-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 90%;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4361ee;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        .user-message .message-icon {
+            background: #6c757d;
+        }
+
+        .message-content {
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #f1f3f5;
+        }
+
+        .user-message .message-content {
+            background: #4361ee;
+            color: white;
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .ai-message .message-content {
+            border-radius: 12px 12px 12px 0;
+        }
+
+        .message-content p {
+            margin: 0 0 8px 0;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message-content code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .assistant-input {
+            padding: 12px 16px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+
+        #user-message {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        #user-message:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4361ee;
+            color: white;
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: #3a56d4;
+        }
+
+        .quick-suggestions {
+            padding: 0 16px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-btn {
+            background: #e9ecef;
+            border: none;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .suggestion-btn:hover {
+            background: #dee2e6;
+        }
+
+        .suggestion-btn i {
+            font-size: 0.8rem;
+            color: #4361ee;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            overflow-x: hidden;
+        }
+
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+            position: relative;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul li a i {
+            margin-right: 0.3rem;
+        }
+
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+
+        .hero {
+            background: linear-gradient(rgba(67, 97, 238, 0.8), rgba(63, 55, 201, 0.8)), url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 1rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: white;
+            color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background-color: white;
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+
+        main {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--secondary-color);
+            margin: 1.5rem 0 1rem;
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        strong {
+            color: var(--secondary-color);
+        }
+
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 0.5rem;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+
+        #practice {
+            background-color: #f5f7ff;
+        }
+
+        .code-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .editor-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .editor-pane, .output-pane {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        #output-frame {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: white;
+        }
+
+        #submit-code {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: flex-start;
+        }
+
+        #submit-code:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-top: 4px solid var(--accent-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin: 0.5rem 0;
+        }
+
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark-color);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-col h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-col ul li a {
+            color: #adb5bd;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-col ul li a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav {
+                width: 100%;
+                margin-top: 1rem;
+                display: none;
+            }
+
+            nav.active {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            
+
+            nav ul li {
+                margin: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+                margin-top: 2rem;
+            }
+
+            @media (max-width: 1200px) {
+                .features-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            @media (max-width: 768px) {
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .feature-card {
+                background-color: white;
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--shadow);
+                transition: var(--transition);
+                border-top: 4px solid var(--accent-color);
+
+                display: flex;
+                flex-direction: column;
+                min-height: 100%;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .feature-card h3 {
+                margin: 0.5rem 0;
+                flex-grow: 1;
+            }
+
+            .feature-icon {
+                font-size: 2.5rem;
+                color: var(--primary-color);
+                margin-bottom: 1rem;
+                min-height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .fa-flag.usa {
+                position: relative;
+                color: #4361ee;
+                transition: all 0.3s ease;
+            }
+
+            .feature-card:hover .fa-flag.usa {
+                animation: waveFlag 0.8s ease-in-out;
+                color: #3a56d4;
+            }
+
+            @keyframes waveFlag {
+                0% { transform: rotate(0deg); }
+                25% { transform: rotate(-10deg) translateY(-2px); }
+                50% { transform: rotate(10deg) translateY(2px); }
+                75% { transform: rotate(-5deg) translateY(-1px); }
+                100% { transform: rotate(0deg); }
+            }
+
+
+            .fa-flag.usa::after {
+                content: '';
+                position: absolute;
+                top: -15px;
+                left: -15px;
+                right: -15px;
+                bottom: -15px;
+                border: 2px solid rgba(67, 97, 238, 0.1);
+                border-radius: 50%;
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+
+            .feature-card:hover .fa-flag.usa::after {
+                opacity: 1;
+                top: -8px;
+                left: -8px;
+                right: -8px;
+                bottom: -8px;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .editor-container {
+                flex-direction: column;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo">
+
+                <i class="fas fa-rocket"></i>
+                <span>HTML Academy</span>
+            </a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav id="mainNav">
+                <ul>
+                    <li><a href="#home"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="#basics"><i class="fas fa-book"></i> Основы HTML</a></li>
+                    <li><a href="#practice"><i class="fas fa-laptop-code"></i> Практика</a></li>
+                    <li><a href="#resources"><i class="fas fa-link"></i> Ресурсы</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <h1 class="fade-in">Изучайте HTML с нуля</h1>
+        <p class="fade-in delay-1">Освойте язык разметки, который лежит в основе всех веб-сайтов. Наши уроки помогут вам быстро и эффективно изучить HTML.</p>
+        <div class="cta-buttons fade-in delay-2">
+            <a href="#basics" class="btn btn-primary">Начать обучение</a>
+            <a href="#practice" class="btn btn-secondary">Попрактиковаться</a>
+        </div>
+    </section>
+
+    <main>
+        <section id="basics" class="fade-in delay-3">
+            <h2>Основы HTML</h2>
+            <p>HTML (HyperText Markup Language) - это стандартный язык разметки для создания веб-страниц. Он определяет структуру и содержание веб-страницы.</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="structure">Структура</button>
+                <button class="tab-btn" data-tab="elements">Элементы</button>
+                <button class="tab-btn" data-tab="attributes">Атрибуты</button>
+            </div>
+            
+            <div class="tab-content active" id="structure">
+                <h3>Базовая структура HTML-документа</h3>
+                <p>Каждый HTML-документ начинается с декларации типа документа <strong>&lt;!DOCTYPE html&gt;</strong>, за которой следует элемент <strong>&lt;html&gt;</strong>.</p>
+                
+                <div class="code-header">
+                    <span>Пример базовой структуры HTML</span>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Мой первый сайт&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Привет, мир!&lt;/h1&gt;
+    &lt;p&gt;Это мой первый HTML-документ.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                
+                <h3>Основные разделы документа</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-heading"></i>
+                        </div>
+                        <h3>&lt;head&gt;</h3>
+                        <p>Содержит метаинформацию о документе: заголовок, ссылки на стили и скрипты, кодировку и другие метаданные.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3>&lt;body&gt;</h3>
+                        <p>Содержит видимое содержимое страницы: тексты, изображения, ссылки, таблицы, формы и другие элементы.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="elements">
+                <h3>Основные HTML-элементы</h3>
+                <p>HTML состоит из элементов, которые определяют структуру и содержание веб-страницы.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-heading"></i>
+                        </div>
+                        <h3>Заголовки</h3>
+                        <p>Заголовки от &lt;h1&gt; до &lt;h6&gt; определяют важность текста. &lt;h1&gt; - самый важный, &lt;h6&gt; - наименее важный.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;h1&gt;Главный заголовок&lt;/h1&gt;
+&lt;h2&gt;Подзаголовок&lt;/h2&gt;
+&lt;h3&gt;Менее важный заголовок&lt;/h3&gt;</code></pre>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-paragraph"></i>
+                        </div>
+                        <h3>Абзацы</h3>
+                        <p>Элемент &lt;p&gt; определяет абзац текста. Браузеры автоматически добавляют отступы до и после каждого абзаца.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;p&gt;Это первый абзац.&lt;/p&gt;
+&lt;p&gt;Это второй абзац.&lt;/p&gt;</code></pre>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3>Ссылки</h3>
+                        <p>Элемент &lt;a&gt; создает гиперссылки. Атрибут href указывает URL-адрес страницы, на которую ведет ссылка.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;a href="https://example.com"&gt;Посетите Example.com&lt;/a&gt;</code></pre>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>Изображения</h3>
+                        <p>Элемент &lt;img&gt; вставляет изображение на страницу. Атрибут src указывает путь к изображению, а alt - альтернативный текст.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;img src="image.jpg" alt="Описание изображения"&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="attributes">
+                <h3>HTML-атрибуты</h3>
+                <p>Атрибуты предоставляют дополнительную информацию об элементах и всегда указываются в начальном теге.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h3>Основные атрибуты</h3>
+                        <p>id, class, style, title - универсальные атрибуты, которые можно использовать с большинством элементов.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;p id="intro" class="important" title="Введение"&gt;
+    Это важный текст.
+&lt;/p&gt;</code></pre>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3>Атрибуты ссылок</h3>
+                        <p>href, target, download, rel - специальные атрибуты для элемента &lt;a&gt;.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;a href="page.html" target="_blank" rel="noopener"&gt;
+    Открыть в новой вкладке
+&lt;/a&gt;</code></pre>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>Атрибуты изображений</h3>
+                        <p>src, alt, width, height, loading - специальные атрибуты для элемента &lt;img&gt;.</p>
+                        <div class="code-header">
+                            <span>Пример</span>
+                            <button class="copy-btn">Копировать</button>
+                        </div>
+                        <pre><code>&lt;img src="photo.jpg" alt="Пейзаж" 
+     width="800" height="600" loading="lazy"&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="elements">
+            <h2>HTML5 Элементы</h2>
+            <p>HTML5 принес множество новых семантических элементов, которые улучшают структуру веб-страницы.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-flag usa"></i>
+                    </div>
+                    <h3>&lt;header&gt;</h3>
+                    <p>Определяет шапку документа или раздела. Обычно содержит заголовки, логотип и навигацию.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <h3>&lt;footer&gt;</h3>
+                    <p>Определяет подвал документа или раздела. Обычно содержит информацию об авторских правах, контакты и ссылки.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                    <h3>&lt;nav&gt;</h3>
+                    <p>Определяет блок навигационных ссылок. Используется для основной навигации по сайту.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-columns"></i>
+                    </div>
+                    <h3>&lt;section&gt;</h3>
+                    <p>Определяет тематический раздел в документе. Обычно содержит заголовок и связанное содержимое.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3>&lt;article&gt;</h3>
+                    <p>Определяет независимый, самодостаточный контент, который может быть распространен отдельно от сайта.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-adjust"></i>
+                    </div>
+                    <h3>&lt;aside&gt;</h3>
+                    <p>Определяет контент, косвенно связанный с основным содержимым (боковые панели, цитаты и т.д.).</p>
+                </div>
+            </div>
+            
+            <div class="code-header">
+                <span>Пример структуры страницы с HTML5 элементами</span>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Современная структура HTML5&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;h1&gt;Заголовок сайта&lt;/h1&gt;
+        &lt;nav&gt;
+            &lt;ul&gt;
+                &lt;li&gt;&lt;a href="#"&gt;Главная&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="#"&gt;О нас&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/nav&gt;
+    &lt;/header&gt;
+    
+    &lt;main&gt;
+        &lt;article&gt;
+            &lt;h2&gt;Заголовок статьи&lt;/h2&gt;
+            &lt;p&gt;Содержание статьи...&lt;/p&gt;
+        &lt;/article&gt;
+        
+        &lt;aside&gt;
+            &lt;h3&gt;Дополнительная информация&lt;/h3&gt;
+            &lt;p&gt;Рекламный блок или другая информация...&lt;/p&gt;
+        &lt;/aside&gt;
+    &lt;/main&gt;
+    
+    &lt;footer&gt;
+        &lt;p&gt;&copy; 2023 Мой сайт&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </section>
+
+         <section id="practice">
+        <h2>Интерактивная практика с AI-помощником</h2>
+        <p class="practice-description">Пишите HTML-код и получайте обратную связь от нашего интеллектуального помощника. Редактор поддерживает подсветку синтаксиса и мгновенный предпросмотр.</p>
+        
+        <div class="ai-practice-container">
+            <div class="code-editor-container">
+                <div class="editor-header">
+                    <span>HTML-редактор</span>
+                    <div class="editor-actions">
+                        <button id="run-code" class="editor-btn" title="Запустить код (Ctrl+Enter)">
+                            <i class="fas fa-play"></i> Запустить
+                        </button>
+                        <button id="reset-code" class="editor-btn" title="Сбросить код к начальному состоянию">
+                            <i class="fas fa-redo"></i> Сбросить
+                        </button>
+                    </div>
+                </div>
+                <textarea id="html-editor">&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+    &lt;title&gt;Моя страница&lt;/title&gt;
+    &lt;style&gt;
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #4361ee;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Привет, мир!&lt;/h1&gt;
+    &lt;p&gt;Попробуйте изменить этот код.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                
+                <div class="editor-footer">
+                    <div class="suggestion-buttons">
+                        <button class="suggestion-btn" data-prompt="Подскажи базовую структуру HTML документа">
+                            <i class="fas fa-lightbulb"></i> Базовая структура
+                        </button>
+                        <button class="suggestion-btn" data-prompt="Как создать форму в HTML?">
+                            <i class="fas fa-lightbulb"></i> Создать форму
+                        </button>
+                        <button class="suggestion-btn" data-prompt="Как добавить изображение?">
+                            <i class="fas fa-lightbulb"></i> Добавить изображение
+                        </button>
+                        <button class="suggestion-btn" data-prompt="Проверь мой код на ошибки">
+                            <i class="fas fa-lightbulb"></i> Проверить код
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="output-container">
+                <div class="output-header">
+                    <span>Результат</span>
+                    <div class="output-actions">
+                        <button id="refresh-output" class="editor-btn" title="Обновить">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button id="fullscreen-output" class="editor-btn" title="Полноэкранный режим">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                <iframe id="html-output" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+            
+            <div class="ai-assistant-container">
+                <div class="assistant-header">
+                    <span>AI-помощник по HTML</span>
+                    <div class="assistant-status" id="assistant-status">
+                        <i class="fas fa-circle"></i> <span>Готов к работе</span>
+                    </div>
+                </div>
+                <div class="assistant-messages" id="assistant-messages">
+                    <div class="message ai-message">
+                        <div class="message-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Привет! Я ваш персональный помощник в изучении HTML. Я могу:</p>
+                            <ul>
+                                <li>Объяснять HTML-теги и атрибуты</li>
+                                <li>Помогать исправлять ошибки в коде</li>
+                                <li>Давать практические задания</li>
+                                <li>Отвечать на ваши вопросы</li>
+                            </ul>
+                            <p>Начните с вопроса или используйте кнопки быстрых подсказок ниже.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="assistant-input">
+                    <textarea id="user-message" placeholder="Задайте вопрос о HTML или попросите проверить ваш код..." rows="1"></textarea>
+                    <button id="send-message" class="send-btn" title="Отправить (Enter)">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="quick-suggestions">
+                    <button class="suggestion-btn" data-prompt="Объясни базовую структуру HTML документа">
+                        <i class="fas fa-code"></i> Структура HTML
+                    </button>
+                    <button class="suggestion-btn" data-prompt="Как создать форму в HTML?">
+                        <i class="fas fa-edit"></i> Создать форму
+                    </button>
+                    <button class="suggestion-btn" data-prompt="Проверь мой код на ошибки">
+                        <i class="fas fa-bug"></i> Проверить код
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+
+            document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const nav = document.getElementById('mainNav');
+                nav.classList.toggle('active');
+            });
+
+
+            document.querySelectorAll('#mainNav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    const nav = document.getElementById('mainNav');
+                    if (nav.classList.contains('active')) {
+                        nav.classList.remove('active');
+                    }
+                });
+            });
+
+
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const editor = CodeMirror.fromTextArea(document.getElementById('html-editor'), {
+                mode: 'htmlmixed',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                lineWrapping: true,
+                autoCloseTags: true,
+                extraKeys: {
+                    'Ctrl-Enter': runCode
+                }
+            });
+
+
+            const htmlOutput = document.getElementById('html-output');
+            const runCodeBtn = document.getElementById('run-code');
+            const resetCodeBtn = document.getElementById('reset-code');
+            const refreshOutputBtn = document.getElementById('refresh-output');
+            const fullscreenOutputBtn = document.getElementById('fullscreen-output');
+            const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+            const userMessageInput = document.getElementById('user-message');
+            const sendMessageBtn = document.getElementById('send-message');
+            const assistantMessages = document.getElementById('assistant-messages');
+            const assistantStatus = document.getElementById('assistant-status');
+
+
+            function runCode() {
+                const code = editor.getValue();
+                const outputDoc = htmlOutput.contentDocument || htmlOutput.contentWindow.document;
+                
+                outputDoc.open();
+                outputDoc.write(code);
+                outputDoc.close();
+                scrollChatToBottom();
+            }
+
+
+            function resetCode() {
+                const defaultCode = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Моя страница</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #4361ee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Привет, мир!</h1>
+    <p>Попробуйте изменить этот код.</p>
+</body>
+</html>`;
+                
+                editor.setValue(defaultCode);
+                runCode();
+                addMessage('ai', 'Код сброшен к начальному состоянию. Можете начать заново.');
+            }
+
+
+            function addMessage(sender, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'message-icon';
+                iconDiv.innerHTML = sender === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = formatMessageContent(content);
+                
+                messageDiv.appendChild(iconDiv);
+                messageDiv.appendChild(contentDiv);
+                assistantMessages.appendChild(messageDiv);
+                
+                scrollChatToBottom();
+            }
+
+
+            function formatMessageContent(text) {
+
+                const codeBlocks = text.split('```');
+                let result = '';
+                
+                for (let i = 0; i < codeBlocks.length; i++) {
+                    if (i % 2 === 1) {
+
+                        result += `<pre><code>${codeBlocks[i]}</code></pre>`;
+                    } else {
+
+                        let paragraph = codeBlocks[i];
+
+                        paragraph = paragraph.replace(/\n/g, '<br>');
+                        if (paragraph.trim() !== '') {
+                            result += `<p>${paragraph}</p>`;
+                        }
+                    }
+                }
+                
+                return result;
+            }
+
+
+            function scrollChatToBottom() {
+                assistantMessages.scrollTop = assistantMessages.scrollHeight;
+            }
+
+
+            async function sendMessage() {
+                const message = userMessageInput.value.trim();
+                if (!message) return;
+                
+
+                addMessage('user', message);
+                userMessageInput.value = '';
+                adjustTextareaHeight();
+                
+
+                assistantStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Печатает...</span>';
+                
+                try {
+
+                    const currentCode = editor.getValue();
+                    
+
+                    const prompt = `Ты эксперт по HTML и CSS. Пользователь спрашивает: "${message}". 
+                    Вот его текущий код:
+                    \`\`\`
+                    ${currentCode}
+                    \`\`\`
+                    Дай подробный ответ с примерами кода, если нужно. Отвечай на русском языке.`;
+                    
+
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: prompt })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Ошибка сервера');
+                    }
+                    
+                    const data = await response.json();
+                    
+
+                    addMessage('ai', data.response);
+                    assistantStatus.innerHTML = '<i class="fas fa-circle"></i> <span>Готов к работе</span>';
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    addMessage('ai', 'Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.');
+                    assistantStatus.innerHTML = '<i class="fas fa-circle" style="color:#f44336"></i> <span>Ошибка соединения</span>';
+                }
+            }
+
+
+            function adjustTextareaHeight() {
+                userMessageInput.style.height = 'auto';
+                userMessageInput.style.height = Math.min(userMessageInput.scrollHeight, 150) + 'px';
+            }
+
+
+            suggestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prompt = this.getAttribute('data-prompt');
+                    userMessageInput.value = prompt;
+                    userMessageInput.focus();
+                    adjustTextareaHeight();
+                });
+            });
+
+
+            runCodeBtn.addEventListener('click', runCode);
+            resetCodeBtn.addEventListener('click', resetCode);
+            refreshOutputBtn.addEventListener('click', runCode);
+            fullscreenOutputBtn.addEventListener('click', function() {
+                const outputContainer = document.querySelector('.output-container');
+                outputContainer.classList.toggle('fullscreen');
+            });
+            sendMessageBtn.addEventListener('click', sendMessage);
+            
+
+            userMessageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+
+            userMessageInput.addEventListener('input', adjustTextareaHeight);
+            
+
+            setTimeout(runCode, 100);
+        });
+    </script>
+
+        <section id="resources">
+            <h2>Дополнительные ресурсы</h2>
+            <p>Вот несколько полезных ресурсов для дальнейшего изучения HTML:</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>MDN Web Docs</h3>
+                    <p>Полное руководство по HTML от Mozilla Developer Network.</p>
+                    <a href="https://developer.mozilla.org/ru/docs/Web/HTML" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-top: 1rem;">Посетить сайт</a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>HTML Academy</h3>
+                    <p>Интерактивные курсы по HTML и CSS для начинающих.</p>
+                    <a href="https://htmlacademy.ru" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-top: 1rem;">Посетить сайт</a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>CodePen</h3>
+                    <p>Онлайн-редактор для экспериментов с HTML, CSS и JavaScript.</p>
+                    <a href="https://codepen.io" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-top: 1rem;">Посетить сайт</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>HTML Academy</h3>
+                <p>Лучший способ изучить HTML с нуля до профессионального уровня.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h3>Разделы</h3>
+                <ul>
+                    <li><a href="#home">Главная</a></li>
+                    <li><a href="#basics">Основы HTML</a></li>
+                    <li><a href="#elements">HTML5 Элементы</a></li>
+                    <li><a href="#practice">Практика</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Ресурсы</h3>
+                <ul>
+                    <li><a href="https://developer.mozilla.org/ru/docs/Web/HTML" target="_blank" rel="noopener">MDN Web Docs</a></li>
+                    <li><a href="https://htmlacademy.ru" target="_blank" rel="noopener">HTML Academy</a></li>
+                    <li><a href="https://codepen.io" target="_blank" rel="noopener">CodePen</a></li>
+                    <li><a href="https://validator.w3.org" target="_blank" rel="noopener">Валидатор HTML</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Контакты</h3>
+                <ul>
+                    <li><i class="fas fa-envelope"></i>nestor.petropavlovskiy@bk.ru</li>
